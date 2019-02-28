@@ -54,7 +54,7 @@ export class EventDetailPage implements OnInit {
       });
       this.guestPicture = profilePicture.base64Data.slice(23);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 

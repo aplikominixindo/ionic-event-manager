@@ -58,30 +58,27 @@ export class EventService {
       .add({ guestName })
       .then(newGuest => {
         return firebase.firestore().runTransaction(transaction => {
-          return transaction.get(this.eventListRef.doc(eventId))
-            .then(eventDoc => {
-              const newRevenue = eventDoc.data().revenue + eventPrice;
-              transaction.update(this.eventListRef.doc(eventId),
-                { revenue: newRevenue });
+          return transaction.get(this.eventListRef.doc(eventId)).then(eventDoc => {
+            const newRevenue = eventDoc.data().revenue + eventPrice;
+            transaction.update(this.eventListRef.doc(eventId), { revenue: newRevenue });
+            if (guestPicture != null) {
+              const storageRef = firebase
+                .storage()
+                .ref(`/guestProfile/${newGuest.id}/profilePicture.png`);
 
-              // jika ada participient mengupload foto
-              if(guestPicture != null) {
-                const storageRef = firebase.storage()
-                  .ref(`/guestPicture/${newGuest.id}/profilePicture.png`);
-                
-                return storageRef
-                  .putString(guestPicture, 'base64', { contentType: 'image/png' })
-                  .then(() => {
-                    return storageRef.getDownloadURL().then(downloadURL => {
-                      return this.eventListRef
-                        .doc(eventId)
-                        .collection('guestList')
-                        .doc(newGuest.id)
-                        .update({ profilePicture: downloadURL });
-                    });
+              return storageRef
+                .putString(guestPicture, 'base64', { contentType: 'image/png' })
+                .then(() => {
+                  return storageRef.getDownloadURL().then(downloadURL => {
+                    return this.eventListRef
+                      .doc(eventId)
+                      .collection('guestList')
+                      .doc(newGuest.id)
+                      .update({ profilePicture: downloadURL });
                   });
-              }
-            });
+                });
+            }
+          });
         });
       });
   }
